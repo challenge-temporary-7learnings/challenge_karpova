@@ -1,0 +1,253 @@
+<html>
+<head>
+<title>Coding Challenge.ipynb</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #bcbec4;}
+.s1 { color: #bcbec4;}
+.s2 { color: #2aacb8;}
+.s3 { color: #7a7e85;}
+.s4 { color: #cf8e6d;}
+.s5 { color: #6aab73;}
+.ls0 { height: 1px; border-width: 0; color: #43454a; background-color:#43454a}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Coding Challenge.ipynb</font>
+</center></td></tr></table>
+<pre><span class="s0">#%% 
+</span><span class="s1">%</span><span class="s0">load_ext bigquery_magics</span><hr class="ls0"><span class="s0">#%% md 
+# &quot;Will it snow tomorrow?&quot; - The time traveler asked 
+ <hr class="ls0">#%% 
+</span><span class="s1">%%</span><span class="s0">bigquery</span>
+<span class="s0">SELECT</span>
+<span class="s1">*,</span>
+<span class="s0">FROM </span><span class="s1">`</span><span class="s0">bigquery</span><span class="s1">-</span><span class="s0">public</span><span class="s1">-</span><span class="s0">data</span><span class="s1">.</span><span class="s0">samples</span><span class="s1">.</span><span class="s0">gsod</span><span class="s1">`</span>
+<span class="s0">LIMIT </span><span class="s2">20</span>
+
+<span class="s3"># That was a test run</span><hr class="ls0"><span class="s0">#%% md 
+## Part 1 <hr class="ls0">#%% md 
+### 1. Task 
+Change the date format to 'YYYY-MM-DD' and select the data from 2000 till 2005 for station numbers including and between 725300 and 726300 , and save it as a pandas dataframe. Note the maximum year available is 2010. <hr class="ls0">#%% 
+</span><span class="s4">import </span><span class="s0">pandas </span><span class="s4">as </span><span class="s0">pd</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s1">%%</span><span class="s0">bigquery df</span>
+<span class="s0">SELECT</span>
+  <span class="s1">*,</span>
+  <span class="s0">CAST</span><span class="s1">(</span><span class="s0">CONCAT</span><span class="s1">(</span><span class="s0">CAST</span><span class="s1">(`</span><span class="s0">year</span><span class="s1">` </span><span class="s0">AS STRING</span><span class="s1">), </span><span class="s5">'-'</span><span class="s1">, </span><span class="s0">CAST</span><span class="s1">(`</span><span class="s0">month</span><span class="s1">` </span><span class="s0">AS STRING</span><span class="s1">), </span><span class="s5">'-'</span><span class="s1">, </span><span class="s0">CAST</span><span class="s1">(`</span><span class="s0">day</span><span class="s1">` </span><span class="s0">AS STRING</span><span class="s1">)) </span><span class="s0">AS STRING</span><span class="s1">) </span><span class="s0">AS date</span>
+<span class="s0">FROM</span>
+  <span class="s1">`</span><span class="s0">bigquery</span><span class="s1">-</span><span class="s0">public</span><span class="s1">-</span><span class="s0">data</span><span class="s1">.</span><span class="s0">samples</span><span class="s1">.</span><span class="s0">gsod</span><span class="s1">`</span>
+<span class="s0">WHERE</span>
+  <span class="s1">`</span><span class="s0">year</span><span class="s1">` &gt;= </span><span class="s2">2000</span>
+  <span class="s0">AND </span><span class="s1">`</span><span class="s0">year</span><span class="s1">` &lt;= </span><span class="s2">2005</span>
+  <span class="s0">AND </span><span class="s1">`</span><span class="s0">station_number</span><span class="s1">` &gt;= </span><span class="s2">725300</span>
+  <span class="s0">AND </span><span class="s1">`</span><span class="s0">station_number</span><span class="s1">` &lt;= </span><span class="s2">726300</span><span class="s0">;</span><hr class="ls0"><span class="s0">#%% 
+df</span><span class="s1">.</span><span class="s0">head</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% 
+df</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% md 
+From here I will be using the set you provided, since I got stuck dealing with how Int64 and boolean treat missing values: I ended up with too few datapoints for the classification. <hr class="ls0">#%% 
+df </span><span class="s1">= </span><span class="s0">pd</span><span class="s1">.</span><span class="s0">read_csv</span><span class="s1">(</span><span class="s5">&quot;coding_challenge.csv&quot;</span><span class="s1">)</span>
+<span class="s0">df</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span>
+<span class="s3"># Convert relevant columns to appropriate types</span>
+<span class="s3">#df['snow_depth'] = pd.to_numeric(df['snow_depth'], errors='coerce')</span>
+<span class="s0">df</span><span class="s1">[</span><span class="s5">'date'</span><span class="s1">] = </span><span class="s0">pd</span><span class="s1">.</span><span class="s0">to_datetime</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[[</span><span class="s5">'year'</span><span class="s1">, </span><span class="s5">'month'</span><span class="s1">, </span><span class="s5">'day'</span><span class="s1">]])</span><hr class="ls0"><span class="s0">#%% 
+df</span><span class="s1">[</span><span class="s5">&quot;max_temperature_explicit&quot;</span><span class="s1">] = </span><span class="s0">df</span><span class="s1">[</span><span class="s5">&quot;max_temperature_explicit&quot;</span><span class="s1">].</span><span class="s0">convert_dtypes</span><span class="s1">(</span><span class="s0">infer_objects</span><span class="s1">=</span><span class="s4">True</span><span class="s1">, </span><span class="s0">convert_boolean</span><span class="s1">=</span><span class="s4">True</span><span class="s1">)</span>
+<span class="s0">df</span><span class="s1">[</span><span class="s5">&quot;date&quot;</span><span class="s1">] = </span><span class="s0">pd</span><span class="s1">.</span><span class="s0">to_datetime</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">&quot;date&quot;</span><span class="s1">])</span>
+<span class="s0">df</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% 
+df</span><span class="s1">.</span><span class="s0">dropna</span><span class="s1">(</span><span class="s0">how</span><span class="s1">=</span><span class="s5">'all'</span><span class="s1">, </span><span class="s0">axis</span><span class="s1">=</span><span class="s2">1</span><span class="s1">, </span><span class="s0">inplace</span><span class="s1">=</span><span class="s4">True</span><span class="s1">)</span>
+<span class="s0">df</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% 
+df</span><span class="s1">= </span><span class="s0">df</span><span class="s1">.</span><span class="s0">drop</span><span class="s1">([</span><span class="s5">'max_temperature_explicit'</span><span class="s1">], </span><span class="s0">axis</span><span class="s1">=</span><span class="s2">1</span><span class="s1">)</span><hr class="ls0"><span class="s0">#%% 
+print</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'station_number'</span><span class="s1">].</span><span class="s0">nunique</span><span class="s1">())</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s0">len</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'station_number'</span><span class="s1">]))</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'wban_number'</span><span class="s1">].</span><span class="s0">nunique</span><span class="s1">())</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s0">len</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'wban_number'</span><span class="s1">]))</span>
+<span class="s0">df</span><span class="s1">[</span><span class="s5">'station_wban'</span><span class="s1">] = </span><span class="s0">df</span><span class="s1">[</span><span class="s5">'station_number'</span><span class="s1">].</span><span class="s0">astype</span><span class="s1">(</span><span class="s0">str</span><span class="s1">) + </span><span class="s5">'_' </span><span class="s1">+ </span><span class="s0">df</span><span class="s1">[</span><span class="s5">'wban_number'</span><span class="s1">].</span><span class="s0">astype</span><span class="s1">(</span><span class="s0">str</span><span class="s1">)</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'station_wban'</span><span class="s1">].</span><span class="s0">nunique</span><span class="s1">())</span>
+<span class="s0">df </span><span class="s1">= </span><span class="s0">df</span><span class="s1">.</span><span class="s0">drop</span><span class="s1">(</span><span class="s5">'station_wban'</span><span class="s1">, </span><span class="s0">axis</span><span class="s1">=</span><span class="s2">1</span><span class="s1">)</span><hr class="ls0"><span class="s0">#%% md 
+From my brief research, US-specific wban_number (Weather Bureau Army Navy number) is largely misleading since administrative changes or changes in ownership lead to giving a physical station different numbers throughout history. A brief check-up of actual data has confirmed this, so I am excluding this information: this particular task does not require distinguishing between different operational periods, and it will only confuse the model. <hr class="ls0">#%% 
+df </span><span class="s1">= </span><span class="s0">df</span><span class="s1">.</span><span class="s0">drop</span><span class="s1">(</span><span class="s5">'wban_number'</span><span class="s1">, </span><span class="s0">axis</span><span class="s1">=</span><span class="s2">1</span><span class="s1">)</span>
+<span class="s0">df</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% md 
+### 2. Task 
+From here we are working with the saved dataframe with data from all stations 725300 to 725330 that have information from 2000 till 2005. <hr class="ls0">#%% 
+</span><span class="s3"># Filter for the station numbers of 10 station of interest</span>
+<span class="s0">start_station </span><span class="s1">= </span><span class="s2">725300</span>
+<span class="s0">end_station </span><span class="s1">= </span><span class="s2">725330</span>
+<span class="s0">df_filtered_stations </span><span class="s1">= </span><span class="s0">df</span><span class="s1">[(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'station_number'</span><span class="s1">] &gt;= </span><span class="s0">start_station</span><span class="s1">) &amp; (</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'station_number'</span><span class="s1">] &lt;= </span><span class="s0">end_station</span><span class="s1">)]</span>
+<span class="s0">df_final </span><span class="s1">= </span><span class="s0">df_filtered_stations</span><hr class="ls0"><span class="s0">#%% 
+df_final</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% md 
+Let us see what year received the most snowfall in the data. We shall determine that by filtering by snow_depth, as it is the closest metric to extrapolate the snowfall. I think that counting all snowy days will be al alternative, but less precise metric. Had I had more time, I would have created a separate metric likely based on precipitation. <hr class="ls0">#%% 
+</span><span class="s3"># Group by year and find the maximum snow depth for each</span>
+<span class="s0">max_snow_depth_per_year </span><span class="s1">= </span><span class="s0">df_final</span><span class="s1">.</span><span class="s0">groupby</span><span class="s1">(</span><span class="s5">'year'</span><span class="s1">)[</span><span class="s5">'snow_depth'</span><span class="s1">].</span><span class="s0">max</span><span class="s1">()</span>
+
+<span class="s3"># Find the year with the overall maximum snow depth</span>
+<span class="s0">year_with_highest_snow_depth </span><span class="s1">= </span><span class="s0">max_snow_depth_per_year</span><span class="s1">.</span><span class="s0">idxmax</span><span class="s1">()</span>
+<span class="s0">highest_snow_depth </span><span class="s1">= </span><span class="s0">max_snow_depth_per_year</span><span class="s1">.</span><span class="s0">max</span><span class="s1">()</span>
+
+<span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;The year with the highest recorded snow depth was </span><span class="s4">{</span><span class="s0">year_with_highest_snow_depth</span><span class="s4">} </span><span class="s5">with a maximum depth of </span><span class="s4">{</span><span class="s0">highest_snow_depth</span><span class="s4">:</span><span class="s5">.2f</span><span class="s4">}</span><span class="s5">.&quot;</span><span class="s1">)</span>
+
+<span class="s3"># Print the maximum snow depth for all years</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s5">&quot;</span><span class="s4">\n</span><span class="s5">Here is the maximum snow depth recorded per year for comparison:&quot;</span><span class="s1">)</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s0">max_snow_depth_per_year</span><span class="s1">)</span><hr class="ls0"><span class="s0">#%% md 
+Adding an additional field that indicates the daily change in snow depth measured at every station and identifying the station and day for which the snow depth increased the most. <hr class="ls0">#%% 
+</span><span class="s3"># Sort by station and date to ensure correct calculation of daily change</span>
+<span class="s0">df_final </span><span class="s1">= </span><span class="s0">df_final</span><span class="s1">.</span><span class="s0">sort_values</span><span class="s1">([</span><span class="s5">'station_number'</span><span class="s1">, </span><span class="s5">'date'</span><span class="s1">])</span>
+
+<span class="s3"># Add a new field for the daily change in snow depth</span>
+<span class="s0">df_final</span><span class="s1">[</span><span class="s5">'daily_snow_depth_change'</span><span class="s1">] = </span><span class="s0">df_final</span><span class="s1">.</span><span class="s0">groupby</span><span class="s1">(</span><span class="s5">'station_number'</span><span class="s1">)[</span><span class="s5">'snow_depth'</span><span class="s1">].</span><span class="s0">diff</span><span class="s1">().</span><span class="s0">fillna</span><span class="s1">(</span><span class="s2">0</span><span class="s1">)</span>
+
+<span class="s3"># Identify the station and day with the maximum increase in snow depth</span>
+<span class="s0">max_increase </span><span class="s1">= </span><span class="s0">df_final</span><span class="s1">[</span><span class="s5">'daily_snow_depth_change'</span><span class="s1">].</span><span class="s0">max</span><span class="s1">()</span>
+<span class="s0">station_day_max_increase </span><span class="s1">= </span><span class="s0">df_final</span><span class="s1">[</span><span class="s0">df_final</span><span class="s1">[</span><span class="s5">'daily_snow_depth_change'</span><span class="s1">] == </span><span class="s0">max_increase</span><span class="s1">][[</span><span class="s5">'station_number'</span><span class="s1">, </span><span class="s5">'date'</span><span class="s1">]]</span>
+
+<span class="s4">if not </span><span class="s0">station_day_max_increase</span><span class="s1">.</span><span class="s0">empty</span><span class="s1">:</span>
+    <span class="s0">station_max </span><span class="s1">= </span><span class="s0">station_day_max_increase</span><span class="s1">[</span><span class="s5">'station_number'</span><span class="s1">].</span><span class="s0">iloc</span><span class="s1">[</span><span class="s2">0</span><span class="s1">]</span>
+    <span class="s0">date_max </span><span class="s1">= </span><span class="s0">station_day_max_increase</span><span class="s1">[</span><span class="s5">'date'</span><span class="s1">].</span><span class="s0">iloc</span><span class="s1">[</span><span class="s2">0</span><span class="s1">].</span><span class="s0">strftime</span><span class="s1">(</span><span class="s5">'%Y-%m-%d'</span><span class="s1">)</span>
+    <span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;The maximum daily increase in snow depth was </span><span class="s4">{</span><span class="s0">max_increase</span><span class="s4">} </span><span class="s5">at station </span><span class="s4">{</span><span class="s0">station_max</span><span class="s4">} </span><span class="s5">on </span><span class="s4">{</span><span class="s0">date_max</span><span class="s4">}</span><span class="s5">.&quot;</span><span class="s1">)</span>
+<span class="s4">else</span><span class="s1">:</span>
+    <span class="s0">print</span><span class="s1">(</span><span class="s5">&quot;No increase in snow depth found in the dataset.&quot;</span><span class="s1">)</span><hr class="ls0"><span class="s0">#%% 
+df </span><span class="s1">= </span><span class="s0">df_final</span>
+<span class="s0">df</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% md 
+Finally, we are to clean the dataset. We will start by dealing with the missing values. There are some missing values that should be set to zero, since their absence is meaningful, others we will impute with their k-nearest neighbours. Some we will drop, and for that I am looking at the correlation between seemingly less relevant columns and target variable. <hr class="ls0">#%% 
+correlation_temp_samples_snow </span><span class="s1">= </span><span class="s0">df</span><span class="s1">[</span><span class="s5">'num_mean_temp_samples'</span><span class="s1">].</span><span class="s0">corr</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'snow'</span><span class="s1">])</span>
+<span class="s0">correlation_dew_samples_snow </span><span class="s1">= </span><span class="s0">df</span><span class="s1">[</span><span class="s5">'num_mean_dew_point_samples'</span><span class="s1">].</span><span class="s0">corr</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'snow'</span><span class="s1">])</span>
+<span class="s0">correlation_sealevel_samples_snow </span><span class="s1">= </span><span class="s0">df</span><span class="s1">[</span><span class="s5">'num_mean_sealevel_pressure_samples'</span><span class="s1">].</span><span class="s0">corr</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'snow'</span><span class="s1">])</span>
+<span class="s0">correlation_pressure_samples_snow </span><span class="s1">= </span><span class="s0">df</span><span class="s1">[</span><span class="s5">'num_mean_station_pressure_samples'</span><span class="s1">].</span><span class="s0">corr</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'snow'</span><span class="s1">])</span>
+<span class="s0">correlation_visibility_samples_snow </span><span class="s1">= </span><span class="s0">df</span><span class="s1">[</span><span class="s5">'num_mean_visibility_samples'</span><span class="s1">].</span><span class="s0">corr</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'snow'</span><span class="s1">])</span>
+<span class="s0">correlation_wind_samples_snow </span><span class="s1">= </span><span class="s0">df</span><span class="s1">[</span><span class="s5">'num_mean_wind_speed_samples'</span><span class="s1">].</span><span class="s0">corr</span><span class="s1">(</span><span class="s0">df</span><span class="s1">[</span><span class="s5">'snow'</span><span class="s1">])</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;Correlation (Number of observations of temperature vs Snow): </span><span class="s4">{</span><span class="s0">correlation_temp_samples_snow</span><span class="s4">}</span><span class="s5">&quot;</span><span class="s1">)</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;Correlation (Number of observations of dew points vs Snow): </span><span class="s4">{</span><span class="s0">correlation_dew_samples_snow</span><span class="s4">}</span><span class="s5">&quot;</span><span class="s1">)</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;Correlation (Number of observations of sea level pressure vs Snow): </span><span class="s4">{</span><span class="s0">correlation_sealevel_samples_snow</span><span class="s4">}</span><span class="s5">&quot;</span><span class="s1">)</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;Correlation (Number of observation of station pressure vs Snow): </span><span class="s4">{</span><span class="s0">correlation_pressure_samples_snow</span><span class="s4">}</span><span class="s5">&quot;</span><span class="s1">)</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;Correlation (Number of observations of visibility measures vs Snow): </span><span class="s4">{</span><span class="s0">correlation_visibility_samples_snow</span><span class="s4">}</span><span class="s5">&quot;</span><span class="s1">)</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;Correlation (Number of observations of wind speed vs Snow): </span><span class="s4">{</span><span class="s0">correlation_wind_samples_snow</span><span class="s4">}</span><span class="s5">&quot;</span><span class="s1">)</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s3"># Fill in fo snow depth</span>
+<span class="s0">df</span><span class="s1">[</span><span class="s5">'snow_depth'</span><span class="s1">] = </span><span class="s0">df</span><span class="s1">[</span><span class="s5">'snow_depth'</span><span class="s1">].</span><span class="s0">fillna</span><span class="s1">(</span><span class="s2">0.0</span><span class="s1">)</span>
+<span class="s3"># Fill in for columns with number of samples</span>
+<span class="s0">num_samples_cols </span><span class="s1">= [</span><span class="s0">col </span><span class="s4">for </span><span class="s0">col </span><span class="s4">in </span><span class="s0">df </span><span class="s4">if </span><span class="s0">col</span><span class="s1">.</span><span class="s0">startswith</span><span class="s1">(</span><span class="s5">'num_mean_'</span><span class="s1">)]</span>
+<span class="s0">df </span><span class="s1">= </span><span class="s0">df</span><span class="s1">.</span><span class="s0">drop</span><span class="s1">(</span><span class="s0">columns </span><span class="s1">= </span><span class="s0">num_samples_cols</span><span class="s1">, </span><span class="s0">axis</span><span class="s1">=</span><span class="s2">1</span><span class="s1">)</span>
+<span class="s3">#for col in num_samples_cols:</span>
+<span class="s3">#    df[col] = df[col].fillna(0)</span>
+
+<span class="s0">df</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s4">import </span><span class="s0">seaborn </span><span class="s4">as </span><span class="s0">sns</span>
+<span class="s4">import </span><span class="s0">matplotlib</span><span class="s1">.</span><span class="s0">pyplot </span><span class="s4">as </span><span class="s0">plt</span>
+
+<span class="s0">correlation_matrix </span><span class="s1">= </span><span class="s0">df</span><span class="s1">.</span><span class="s0">corr</span><span class="s1">()</span>
+
+<span class="s0">plt</span><span class="s1">.</span><span class="s0">figure</span><span class="s1">(</span><span class="s0">figsize</span><span class="s1">=(</span><span class="s2">12</span><span class="s1">, </span><span class="s2">10</span><span class="s1">))</span>
+<span class="s0">sns</span><span class="s1">.</span><span class="s0">heatmap</span><span class="s1">(</span><span class="s0">correlation_matrix</span><span class="s1">, </span><span class="s0">annot</span><span class="s1">=</span><span class="s4">True</span><span class="s1">, </span><span class="s0">cmap</span><span class="s1">=</span><span class="s5">'coolwarm'</span><span class="s1">, </span><span class="s0">fmt</span><span class="s1">=</span><span class="s5">&quot;.2f&quot;</span><span class="s1">, </span><span class="s0">linewidths</span><span class="s1">=</span><span class="s2">.5</span><span class="s1">)</span>
+<span class="s0">plt</span><span class="s1">.</span><span class="s0">title</span><span class="s1">(</span><span class="s5">'Correlation Matrix of All Numerical Features'</span><span class="s1">)</span>
+<span class="s0">plt</span><span class="s1">.</span><span class="s0">show</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% md 
+All remaining binary values are highly correlated, others are expected. <hr class="ls0">#%% md 
+Here starts the process of data normalization. <hr class="ls0">#%% 
+</span><span class="s3"># Start by splitting the data into numeric and not numeric</span>
+<span class="s0">df</span><span class="s1">[</span><span class="s5">'station_number'</span><span class="s1">] = </span><span class="s0">df</span><span class="s1">[</span><span class="s5">'station_number'</span><span class="s1">].</span><span class="s0">astype</span><span class="s1">(</span><span class="s0">str</span><span class="s1">)</span>
+<span class="s0">numerical_df </span><span class="s1">= </span><span class="s0">df</span><span class="s1">.</span><span class="s0">select_dtypes</span><span class="s1">(</span><span class="s0">include</span><span class="s1">=[</span><span class="s5">'number'</span><span class="s1">, </span><span class="s5">'bool'</span><span class="s1">, </span><span class="s5">'boolean'</span><span class="s1">]).</span><span class="s0">copy</span><span class="s1">()</span>
+<span class="s0">non_numerical_df </span><span class="s1">= </span><span class="s0">df</span><span class="s1">.</span><span class="s0">select_dtypes</span><span class="s1">(</span><span class="s0">exclude</span><span class="s1">=[</span><span class="s5">'number'</span><span class="s1">, </span><span class="s5">'bool'</span><span class="s1">, </span><span class="s5">'boolean'</span><span class="s1">]).</span><span class="s0">copy</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% 
+numerical_df</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s4">from </span><span class="s0">sklearn</span><span class="s1">.</span><span class="s0">preprocessing </span><span class="s4">import </span><span class="s0">StandardScaler</span>
+
+<span class="s0">scaler </span><span class="s1">= </span><span class="s0">StandardScaler</span><span class="s1">()</span>
+<span class="s0">scaled_numerical_df </span><span class="s1">= </span><span class="s0">pd</span><span class="s1">.</span><span class="s0">DataFrame</span><span class="s1">(</span><span class="s0">scaler</span><span class="s1">.</span><span class="s0">fit_transform</span><span class="s1">(</span><span class="s0">numerical_df</span><span class="s1">), </span><span class="s0">columns</span><span class="s1">=</span><span class="s0">numerical_df</span><span class="s1">.</span><span class="s0">columns</span><span class="s1">)</span>
+<hr class="ls0"><span class="s0">#%% 
+</span><span class="s4">from </span><span class="s0">sklearn</span><span class="s1">.</span><span class="s0">impute </span><span class="s4">import </span><span class="s0">KNNImputer</span>
+
+<span class="s0">imputer </span><span class="s1">= </span><span class="s0">KNNImputer</span><span class="s1">(</span><span class="s0">n_neighbors</span><span class="s1">=</span><span class="s2">5</span><span class="s1">)</span>
+
+<span class="s0">imputed_array </span><span class="s1">= </span><span class="s0">imputer</span><span class="s1">.</span><span class="s0">fit_transform</span><span class="s1">(</span><span class="s0">scaled_numerical_df</span><span class="s1">)</span>
+
+<span class="s3"># Convert the imputed array back to a Pandas DataFrame</span>
+<span class="s0">imputed_numerical_df </span><span class="s1">= </span><span class="s0">pd</span><span class="s1">.</span><span class="s0">DataFrame</span><span class="s1">(</span><span class="s0">imputed_array</span><span class="s1">, </span><span class="s0">columns</span><span class="s1">=</span><span class="s0">scaled_numerical_df</span><span class="s1">.</span><span class="s0">columns</span><span class="s1">)</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s3"># Combine with non-numerical</span>
+<span class="s0">df_imputed </span><span class="s1">= </span><span class="s0">pd</span><span class="s1">.</span><span class="s0">concat</span><span class="s1">([</span><span class="s0">imputed_numerical_df</span><span class="s1">, </span><span class="s0">non_numerical_df</span><span class="s1">], </span><span class="s0">axis</span><span class="s1">=</span><span class="s2">1</span><span class="s1">)</span><hr class="ls0"><span class="s0">#%% 
+df_imputed</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s3">#Verify that the data is clean</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s0">df_imputed</span><span class="s1">.</span><span class="s0">isnull</span><span class="s1">().</span><span class="s0">sum</span><span class="s1">())</span><hr class="ls0"><span class="s0">#%% 
+df </span><span class="s1">= </span><span class="s0">df_imputed</span>
+<span class="s0">df</span><span class="s1">[</span><span class="s5">'station_number'</span><span class="s1">] = </span><span class="s0">df</span><span class="s1">[</span><span class="s5">'station_number'</span><span class="s1">].</span><span class="s0">astype</span><span class="s1">(</span><span class="s0">float</span><span class="s1">)</span>
+<span class="s0">df</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% md 
+## Part 2 <hr class="ls0">#%% md 
+We want to train a classification model for a specific date. For this, we would need to define a prediction window. For the date and each station we would need to extract the weather data, train a classifiction model, and make a prediction. 
+ 
+Moreover, the dataset is most likely biased towards no snow condition, that should be remedied by introducing the weights. <hr class="ls0">#%% 
+</span><span class="s4">import </span><span class="s0">datetime </span><span class="s4">as </span><span class="s0">dt</span>
+<span class="s4">import </span><span class="s0">pandas </span><span class="s4">as </span><span class="s0">pd</span>
+<span class="s4">from </span><span class="s0">sklearn</span><span class="s1">.</span><span class="s0">linear_model </span><span class="s4">import </span><span class="s0">LogisticRegression</span>
+<span class="s4">from </span><span class="s0">sklearn</span><span class="s1">.</span><span class="s0">metrics </span><span class="s4">import </span><span class="s0">accuracy_score</span><span class="s1">, </span><span class="s0">classification_report</span>
+<hr class="ls0"><span class="s0">#%% 
+</span><span class="s3"># The most crucial step for defining a prediction window, creating lagged days</span>
+<span class="s0">lag_days </span><span class="s1">= </span><span class="s2">3</span>
+<span class="s0">numerical_features </span><span class="s1">= [</span><span class="s5">&quot;mean_temp&quot;</span><span class="s1">,</span><span class="s5">&quot;mean_dew_point&quot;</span><span class="s1">, </span><span class="s5">&quot;mean_sealevel_pressure&quot;</span><span class="s1">, </span><span class="s5">&quot;mean_station_pressure&quot;</span><span class="s1">, </span><span class="s5">&quot;mean_visibility&quot;</span><span class="s1">, </span><span class="s5">&quot;mean_wind_speed&quot;</span><span class="s1">, </span><span class="s5">&quot;max_sustained_wind_speed&quot;</span><span class="s1">,</span><span class="s5">&quot;max_gust_wind_speed&quot;</span><span class="s1">,</span><span class="s5">&quot;max_temperature&quot;</span><span class="s1">, </span><span class="s5">&quot;total_precipitation&quot;</span><span class="s1">, </span><span class="s5">&quot;snow_depth&quot;</span><span class="s1">, </span><span class="s5">&quot;fog&quot;</span><span class="s1">, </span><span class="s5">&quot;rain&quot;</span><span class="s1">, </span><span class="s5">&quot;hail&quot;</span><span class="s1">, </span><span class="s5">&quot;thunder&quot;</span><span class="s1">, </span><span class="s5">&quot;tornado&quot;</span><span class="s1">, </span><span class="s5">&quot;daily_snow_depth_change&quot;</span><span class="s1">]</span>
+<span class="s0">lagged_features_list </span><span class="s1">= []</span>
+
+<span class="s4">for </span><span class="s0">feature </span><span class="s4">in </span><span class="s0">numerical_features</span><span class="s1">:</span>
+    <span class="s4">for </span><span class="s0">i </span><span class="s4">in </span><span class="s0">range</span><span class="s1">(</span><span class="s2">1</span><span class="s1">, </span><span class="s0">lag_days </span><span class="s1">+ </span><span class="s2">1</span><span class="s1">):</span>
+        <span class="s0">lagged_col </span><span class="s1">= </span><span class="s0">df</span><span class="s1">.</span><span class="s0">groupby</span><span class="s1">(</span><span class="s5">'station_number'</span><span class="s1">)[</span><span class="s0">feature</span><span class="s1">].</span><span class="s0">shift</span><span class="s1">(</span><span class="s0">i</span><span class="s1">).</span><span class="s0">rename</span><span class="s1">(</span><span class="s5">f'</span><span class="s4">{</span><span class="s0">feature</span><span class="s4">}</span><span class="s5">_lag</span><span class="s4">{</span><span class="s0">i</span><span class="s4">}</span><span class="s5">'</span><span class="s1">)</span>
+        <span class="s0">lagged_features_list</span><span class="s1">.</span><span class="s0">append</span><span class="s1">(</span><span class="s0">lagged_col</span><span class="s1">)</span>
+
+<span class="s3"># Concatenate all the lagged feature into the original df</span>
+<span class="s0">df </span><span class="s1">= </span><span class="s0">pd</span><span class="s1">.</span><span class="s0">concat</span><span class="s1">([</span><span class="s0">df</span><span class="s1">, *</span><span class="s0">lagged_features_list</span><span class="s1">], </span><span class="s0">axis</span><span class="s1">=</span><span class="s2">1</span><span class="s1">)</span>
+<span class="s0">df_prepared </span><span class="s1">= </span><span class="s0">df</span>
+<span class="s3"># Dropping NaN values</span>
+<span class="s0">df_prepared </span><span class="s1">= </span><span class="s0">df</span><span class="s1">.</span><span class="s0">dropna</span><span class="s1">(</span><span class="s0">subset</span><span class="s1">=[</span><span class="s5">f'</span><span class="s4">{</span><span class="s0">f</span><span class="s4">}</span><span class="s5">_lag</span><span class="s4">{</span><span class="s0">i</span><span class="s4">}</span><span class="s5">' </span><span class="s4">for </span><span class="s0">f </span><span class="s4">in </span><span class="s0">numerical_features </span><span class="s4">for </span><span class="s0">i </span><span class="s4">in </span><span class="s0">range</span><span class="s1">(</span><span class="s2">1</span><span class="s1">, </span><span class="s0">lag_days </span><span class="s1">+ </span><span class="s2">1</span><span class="s1">)] + [</span><span class="s5">'snow'</span><span class="s1">])</span>
+<hr class="ls0"><span class="s0">#%% 
+df_prepared</span><span class="s1">.</span><span class="s0">info</span><span class="s1">()</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s3"># Define the target date as in the assignment. I leave it like that since I am not sure whether you wanted a more precise target date.</span>
+<span class="s0">target_date </span><span class="s1">= </span><span class="s0">dt</span><span class="s1">.</span><span class="s0">datetime</span><span class="s1">.</span><span class="s0">today</span><span class="s1">() - </span><span class="s0">dt</span><span class="s1">.</span><span class="s0">timedelta</span><span class="s1">(</span><span class="s0">days</span><span class="s1">=</span><span class="s2">20 </span><span class="s1">* </span><span class="s2">365</span><span class="s1">)</span>
+<span class="s0">target_year </span><span class="s1">= </span><span class="s0">target_date</span><span class="s1">.</span><span class="s0">year</span>
+<span class="s0">target_month </span><span class="s1">= </span><span class="s0">target_date</span><span class="s1">.</span><span class="s0">month</span>
+<span class="s0">target_day </span><span class="s1">= </span><span class="s0">target_date</span><span class="s1">.</span><span class="s0">day</span>
+
+<span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;Target date for test set: </span><span class="s4">{</span><span class="s0">target_date</span><span class="s1">.</span><span class="s0">strftime</span><span class="s1">(</span><span class="s5">'%Y-%m-%d'</span><span class="s1">)</span><span class="s4">}</span><span class="s5">&quot;</span><span class="s1">)</span>
+
+<span class="s3"># Split into tets set (just ine date) and the rest</span>
+<span class="s0">df_test </span><span class="s1">= </span><span class="s0">df_prepared</span><span class="s1">[</span><span class="s0">df_prepared</span><span class="s1">[</span><span class="s5">'date'</span><span class="s1">].</span><span class="s0">dt</span><span class="s1">.</span><span class="s0">date </span><span class="s1">== </span><span class="s0">target_date</span><span class="s1">.</span><span class="s0">date</span><span class="s1">()].</span><span class="s0">copy</span><span class="s1">()</span>
+<span class="s0">df_train_eval </span><span class="s1">= </span><span class="s0">df_prepared</span><span class="s1">[</span><span class="s0">df_prepared</span><span class="s1">[</span><span class="s5">'date'</span><span class="s1">].</span><span class="s0">dt</span><span class="s1">.</span><span class="s0">date </span><span class="s1">!= </span><span class="s0">target_date</span><span class="s1">.</span><span class="s0">date</span><span class="s1">()].</span><span class="s0">copy</span><span class="s1">()</span>
+
+<span class="s3"># Make sure the sets are of the same shape</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;Shape of df_test: </span><span class="s4">{</span><span class="s0">df_test</span><span class="s1">.</span><span class="s0">shape</span><span class="s4">}</span><span class="s5">&quot;</span><span class="s1">)</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;Shape of df_train_eval: </span><span class="s4">{</span><span class="s0">df_train_eval</span><span class="s1">.</span><span class="s0">shape</span><span class="s4">}</span><span class="s5">&quot;</span><span class="s1">)</span>
+
+<span class="s3"># Create date column for the chronological split</span>
+
+<span class="s0">df_train_eval </span><span class="s1">= </span><span class="s0">df_train_eval</span><span class="s1">.</span><span class="s0">sort_values</span><span class="s1">(</span><span class="s5">'date'</span><span class="s1">)</span>
+
+<span class="s3"># Split into training and evaluation sets</span>
+<span class="s0">train_size </span><span class="s1">= </span><span class="s0">int</span><span class="s1">(</span><span class="s2">0.8 </span><span class="s1">* </span><span class="s0">len</span><span class="s1">(</span><span class="s0">df_train_eval</span><span class="s1">))</span>
+<span class="s0">df_train </span><span class="s1">= </span><span class="s0">df_train_eval</span><span class="s1">.</span><span class="s0">iloc</span><span class="s1">[:</span><span class="s0">train_size</span><span class="s1">].</span><span class="s0">drop</span><span class="s1">(</span><span class="s0">columns</span><span class="s1">=[</span><span class="s5">'date'</span><span class="s1">], </span><span class="s0">errors</span><span class="s1">=</span><span class="s5">'ignore'</span><span class="s1">).</span><span class="s0">copy</span><span class="s1">()</span>
+<span class="s0">df_eval </span><span class="s1">= </span><span class="s0">df_train_eval</span><span class="s1">.</span><span class="s0">iloc</span><span class="s1">[</span><span class="s0">train_size</span><span class="s1">:].</span><span class="s0">drop</span><span class="s1">(</span><span class="s0">columns</span><span class="s1">=[</span><span class="s5">'date'</span><span class="s1">], </span><span class="s0">errors</span><span class="s1">=</span><span class="s5">'ignore'</span><span class="s1">).</span><span class="s0">copy</span><span class="s1">()</span>
+
+<span class="s3"># Define features and target</span>
+
+<span class="s0">X_train </span><span class="s1">= </span><span class="s0">df_train</span><span class="s1">.</span><span class="s0">drop</span><span class="s1">(</span><span class="s0">columns</span><span class="s1">=[</span><span class="s5">'snow'</span><span class="s1">, </span><span class="s5">'date'</span><span class="s1">, </span><span class="s5">'year'</span><span class="s1">, </span><span class="s5">'month'</span><span class="s1">, </span><span class="s5">'day'</span><span class="s1">], </span><span class="s0">errors</span><span class="s1">=</span><span class="s5">'ignore'</span><span class="s1">)</span>
+<span class="s0">y_train </span><span class="s1">= </span><span class="s0">df_train</span><span class="s1">[</span><span class="s5">'snow'</span><span class="s1">].</span><span class="s0">astype</span><span class="s1">(</span><span class="s0">int</span><span class="s1">)</span>
+<span class="s0">X_eval </span><span class="s1">= </span><span class="s0">df_eval</span><span class="s1">.</span><span class="s0">drop</span><span class="s1">(</span><span class="s0">columns</span><span class="s1">=[</span><span class="s5">'snow'</span><span class="s1">, </span><span class="s5">'date'</span><span class="s1">, </span><span class="s5">'year'</span><span class="s1">, </span><span class="s5">'month'</span><span class="s1">, </span><span class="s5">'day'</span><span class="s1">], </span><span class="s0">errors</span><span class="s1">=</span><span class="s5">'ignore'</span><span class="s1">)</span>
+<span class="s0">y_eval </span><span class="s1">= </span><span class="s0">df_eval</span><span class="s1">[</span><span class="s5">'snow'</span><span class="s1">].</span><span class="s0">astype</span><span class="s1">(</span><span class="s0">int</span><span class="s1">)</span>
+<span class="s0">X_test </span><span class="s1">= </span><span class="s0">df_test</span><span class="s1">.</span><span class="s0">drop</span><span class="s1">(</span><span class="s0">columns</span><span class="s1">=[</span><span class="s5">'snow'</span><span class="s1">, </span><span class="s5">'date'</span><span class="s1">, </span><span class="s5">'year'</span><span class="s1">, </span><span class="s5">'month'</span><span class="s1">, </span><span class="s5">'day'</span><span class="s1">], </span><span class="s0">errors</span><span class="s1">=</span><span class="s5">'ignore'</span><span class="s1">)</span>
+<span class="s0">y_test </span><span class="s1">= </span><span class="s0">df_test</span><span class="s1">[</span><span class="s5">'snow'</span><span class="s1">].</span><span class="s0">astype</span><span class="s1">(</span><span class="s0">int</span><span class="s1">)</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s3"># Training and evaluation</span>
+<span class="s0">model </span><span class="s1">= </span><span class="s0">LogisticRegression</span><span class="s1">(</span><span class="s0">random_state</span><span class="s1">=</span><span class="s2">42</span><span class="s1">, </span><span class="s0">class_weight</span><span class="s1">=</span><span class="s5">'balanced'</span><span class="s1">, </span><span class="s0">solver</span><span class="s1">=</span><span class="s5">'liblinear'</span><span class="s1">) </span><span class="s3"># Balancing the dataset</span>
+<span class="s0">model</span><span class="s1">.</span><span class="s0">fit</span><span class="s1">(</span><span class="s0">X_train</span><span class="s1">, </span><span class="s0">y_train</span><span class="s1">)</span>
+
+<span class="s0">y_pred_eval </span><span class="s1">= </span><span class="s0">model</span><span class="s1">.</span><span class="s0">predict</span><span class="s1">(</span><span class="s0">X_eval</span><span class="s1">)</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s5">&quot;Evaluation Set Performance:&quot;</span><span class="s1">)</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s5">f&quot;Accuracy: </span><span class="s4">{</span><span class="s0">accuracy_score</span><span class="s1">(</span><span class="s0">y_eval</span><span class="s1">, </span><span class="s0">y_pred_eval</span><span class="s1">)</span><span class="s4">:</span><span class="s5">.4f</span><span class="s4">}</span><span class="s5">&quot;</span><span class="s1">)</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s0">classification_report</span><span class="s1">(</span><span class="s0">y_eval</span><span class="s1">, </span><span class="s0">y_pred_eval</span><span class="s1">, </span><span class="s0">zero_division</span><span class="s1">=</span><span class="s2">0</span><span class="s1">))</span>
+
+<span class="s3"># Make predictions</span>
+<span class="s0">prediction </span><span class="s1">= </span><span class="s0">model</span><span class="s1">.</span><span class="s0">predict</span><span class="s1">(</span><span class="s0">X_test</span><span class="s1">)</span>
+
+<span class="s3"># Convert the array to series</span>
+<span class="s0">prediction_series </span><span class="s1">= </span><span class="s0">pd</span><span class="s1">.</span><span class="s0">Series</span><span class="s1">(</span><span class="s0">prediction</span><span class="s1">, </span><span class="s0">index</span><span class="s1">=</span><span class="s0">y_test</span><span class="s1">.</span><span class="s0">index</span><span class="s1">, </span><span class="s0">name</span><span class="s1">=</span><span class="s5">'predicted'</span><span class="s1">)</span>
+
+<span class="s3"># Concatenate the series for a final result table</span>
+<span class="s0">df_concatenated </span><span class="s1">= </span><span class="s0">pd</span><span class="s1">.</span><span class="s0">concat</span><span class="s1">([</span><span class="s0">y_test</span><span class="s1">, </span><span class="s0">prediction_series</span><span class="s1">, </span><span class="s0">X_test</span><span class="s1">[</span><span class="s5">&quot;station_number&quot;</span><span class="s1">].</span><span class="s0">astype</span><span class="s1">(</span><span class="s0">int</span><span class="s1">)], </span><span class="s0">axis</span><span class="s1">=</span><span class="s2">1</span><span class="s1">).</span><span class="s0">iloc</span><span class="s1">[:</span><span class="s2">10</span><span class="s1">].</span><span class="s0">copy</span><span class="s1">()</span>
+<span class="s0">print</span><span class="s1">(</span><span class="s0">df_concatenated</span><span class="s1">)</span><hr class="ls0"><span class="s0">#%% md 
+The results ended up being accurate, but too overfit. A logistic regression was a good starting point, but for a model that would be able to generalize well it is likely not the best choice. I have also considered tree-based algorithms for they handle categorical data as features better, but since I have not implemented the features I wanted I have left the intended comparison at that. Also, now it seems that the highly correlated features would not allow for a better fit. 
+ 
+I have not scaled back the features and the prediction for the interpretation. I have not included some of the planned features like encoding of categorical features, rolling statistics for the time window or potential merging with geospatial data for a lack of time. 
+ 
+For an improved approach additional features and full dataset should be utilized and different algorithms like neural networks should be taken into consideration for they handle temporal dependencies better.</span></pre>
+</body>
+</html>
