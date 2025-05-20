@@ -4,15 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a8a2ee6b-2a23-4325-825f-d7447ecb27cb" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/challenge_karpova.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Coding Challenge.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    <list default="true" id="a8a2ee6b-2a23-4325-825f-d7447ecb27cb" name="Changes" comment="The final submission">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,12 +63,25 @@
       <option name="presentableId" value="Default" />
       <updated>1747593598250</updated>
       <workItem from="1747593599332" duration="3668000" />
-      <workItem from="1747671799914" duration="29466000" />
+      <workItem from="1747671799914" duration="29999000" />
     </task>
+    <task id="LOCAL-00001" summary="The final submission">
+      <option name="closed" value="true" />
+      <created>1747748066507</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1747748066507</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="The final submission" />
+    <option name="LAST_COMMIT_MESSAGE" value="The final submission" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
